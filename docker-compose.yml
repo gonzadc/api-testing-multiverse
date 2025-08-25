@@ -75,21 +75,33 @@ services:
     command: ["run", "--summary-export=/k6/results/summary.json", "/k6/starwars.js"]
     networks: [swapi_net]
 
-  zap-api:
+  zap-baseline:
+    image: ghcr.io/zaproxy/zaproxy:stable
+    profiles: ["security"]
+    volumes:
+      - ./zap:/zap/wrk
+    command:
+      [
+        "zap-baseline.py",
+        "-t","http://prism:4010",
+        "-r","/zap/wrk/zap-baseline.html",
+        "-d","-I"
+      ]
+    networks: [swapi_net]
+
+  zap-automation:
     image: ghcr.io/zaproxy/zaproxy:weekly
     profiles: ["security"]
     volumes:
       - ./openapi/swapi.yaml:/zap/wrk/openapi.yaml:ro
+      - ./zap/automation.yaml:/zap/wrk/automation.yaml:ro
       - ./zap:/zap/wrk
+    # -cmd = modo CLI (no UI), -addonupdate = actualiza reglas, -autorun = ejecuta el YAML
     command:
       [
-        "zap-api-scan.py",
-        "-t","/zap/wrk/openapi.yaml",
-        "-f","openapi",
-        "-r","/zap/wrk/zap-api-report.html",
-        "-J","/zap/wrk/zap-api-report.json",
-        "-d","-I","-S",
-        "-z","-config api.disablekey=true"
+        "zap.sh","-cmd","-addonupdate",
+        "-config","api.disablekey=true",
+        "-autorun","/zap/wrk/automation.yaml"
       ]
     networks: [swapi_net]
 

@@ -1,0 +1,59 @@
+env:
+  vars:
+    target: "http://prism:4010"            # o "https://swapi.info/api"
+    spec: "/zap/wrk/openapi.yaml"
+
+  parameters:
+    failOnError: true
+    failOnWarning: false
+    progressToStdout: true
+
+  contexts:
+    - name: "SwapiContext"
+      urls:
+        - ${target}                         # variables como ${target}
+      includePaths:
+        - ^${target}.*
+      authentication:
+        method: "manual"
+      sessionManagement:
+        method: "cookie"
+
+jobs:
+  - type: openapi
+    name: "Import OpenAPI"
+    parameters:
+      apiFile: ${spec}                      # variables como ${spec}
+      targetUrl: ${target}                  # override del server de la OAS
+      context: "SwapiContext"
+
+  - type: passiveScan-wait
+    name: "Wait for Passive Scan"
+    parameters:
+      maxDuration: 2
+
+  - type: activeScan
+    name: "Active Scan"
+    parameters:
+      context: "SwapiContext"
+      scanOnlyInScope: true
+      threadPerHost: 5
+      maxRuleDurationInMins: 5
+
+  - type: report
+    name: "HTML Report"
+    parameters:
+      template: "traditional-html"
+      reportDir: "/zap/wrk"
+      reportFile: "zap-automation.html"
+      displayReport: false
+
+tests:
+  - name: "No High Alerts"
+    type: "alert"
+    risk: "high"
+    threshold: 0
+  - name: "Medium Alerts <= 2"
+    type: "alert"
+    risk: "medium"
+    threshold: 2
