@@ -1,0 +1,221 @@
+version: "1.1"
+name: "SWAPI – GET + schema refs + 404"
+
+tests:
+  ###########################################################################
+  # PEOPLE
+  ###########################################################################
+  people-list:
+    steps:
+      - http:
+          method: GET
+          url: http://prism:4010/people
+          check:
+            status: 200
+            # La lista es un array de Person
+            schema:
+              type: array
+              items:
+                $ref: "/openapi/swapi.yaml#/components/schemas/Person"
+
+  people-detail:
+    steps:
+      - http:
+          method: GET
+          url: http://prism:4010/people/1
+          check:
+            status: 200
+            schema:
+              $ref: "/openapi/swapi.yaml#/components/schemas/Person"
+            # Checks ligeros extra además del schema
+            jsonpath:
+              $.name: /.+/          # string no vacío
+              $.url:  /.+/          # string no vacío
+
+  people-404:
+    steps:
+      - http:
+          method: GET
+          url: http://prism:4010/people/999999
+          check:
+            status: 404
+
+  ###########################################################################
+  # FILMS
+  ###########################################################################
+  films-list:
+    steps:
+      - http:
+          method: GET
+          url: http://prism:4010/films
+          check:
+            status: 200
+            schema:
+              type: array
+              items:
+                $ref: "/openapi/swapi.yaml#/components/schemas/Film"
+
+  films-detail:
+    steps:
+      - http:
+          method: GET
+          url: http://prism:4010/films/1
+          check:
+            status: 200
+            schema:
+              $ref: "/openapi/swapi.yaml#/components/schemas/Film"
+            jsonpath:
+              $.title: /.+/         # string no vacío
+              $.url:   /.+/
+
+  films-404:
+    steps:
+      - http:
+          method: GET
+          url: http://prism:4010/films/999999
+          check:
+            status: 404
+
+  ###########################################################################
+  # PLANETS
+  ###########################################################################
+  planets-list:
+    steps:
+      - http:
+          method: GET
+          url: http://prism:4010/planets
+          check:
+            status: 200
+            schema:
+              type: array
+              items:
+                $ref: "/openapi/swapi.yaml#/components/schemas/Planet"
+
+  planets-detail:
+    steps:
+      - http:
+          method: GET
+          url: http://prism:4010/planets/1
+          check:
+            status: 200
+            schema:
+              $ref: "/openapi/swapi.yaml#/components/schemas/Planet"
+            jsonpath:
+              $.name: /.+/
+              $.url:  /.+/
+
+  planets-404:
+    steps:
+      - http:
+          method: GET
+          url: http://prism:4010/planets/999999
+          check:
+            status: 404
+
+  ###########################################################################
+  # STARSHIPS
+  ###########################################################################
+  starships-list:
+    steps:
+      - http:
+          method: GET
+          url: http://prism:4010/starships
+          check:
+            status: 200
+            schema:
+              type: array
+              items:
+                $ref: "/openapi/swapi.yaml#/components/schemas/Starship"
+
+  starships-detail:
+    steps:
+      - http:
+          method: GET
+          url: http://prism:4010/starships/2
+          check:
+            status: 200
+            schema:
+              $ref: "/openapi/swapi.yaml#/components/schemas/Starship"
+            jsonpath:
+              $.name: /.+/
+              $.url:  /.+/
+
+  starships-404:
+    steps:
+      - http:
+          method: GET
+          url: http://prism:4010/starships/999999
+          check:
+            status: 404
+
+  ###########################################################################
+  # SPECIES
+  ###########################################################################
+  species-list:
+    steps:
+      - http:
+          method: GET
+          url: http://prism:4010/species
+          check:
+            status: 200
+            schema:
+              type: array
+              items:
+                $ref: "/openapi/swapi.yaml#/components/schemas/Species"
+
+  species-detail:
+    steps:
+      - http:
+          method: GET
+          url: http://prism:4010/species/1
+          check:
+            status: 200
+            schema:
+              $ref: "/openapi/swapi.yaml#/components/schemas/Species"
+            jsonpath:
+              $.name: /.+/
+              $.url:  /.+/
+
+  species-404:
+    steps:
+      - http:
+          method: GET
+          url: http://prism:4010/species/999999
+          check:
+            status: 404
+
+  ###########################################################################
+  # VEHICLES
+  ###########################################################################
+  vehicles-list:
+    steps:
+      - http:
+          method: GET
+          url: http://prism:4010/vehicles
+          check:
+            status: 200
+            schema:
+              type: array
+              items:
+                $ref: "/openapi/swapi.yaml#/components/schemas/Vehicle"
+
+  vehicles-detail:
+    steps:
+      - http:
+          method: GET
+          url: http://prism:4010/vehicles/4
+          check:
+            status: 200
+            schema:
+              $ref: "/openapi/swapi.yaml#/components/schemas/Vehicle"
+            jsonpath:
+              $.name: /.+/
+              $.url:  /.+/
+
+  vehicles-404:
+    steps:
+      - http:
+          method: GET
+          url: http://prism:4010/vehicles/999999
+          check:
+            status: 404

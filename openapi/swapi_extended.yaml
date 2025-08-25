@@ -1,0 +1,420 @@
+openapi: 3.0.0
+info:
+  title: Star Wars API (SWAPI)
+  description: API pública para acceder a datos del universo de Star Wars.
+  version: 1.0.0
+servers:
+- url: https://swapi.info/api
+paths:
+  /people:
+    get:
+      summary: Listar personajes
+      responses:
+        '200':
+          description: Lista de personajes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Person'
+    post:
+      summary: Crear nuevo person
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Person'
+      responses:
+        '201':
+          description: Person creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+  /people/{id}:
+    get:
+      summary: Obtener personaje por ID
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Detalle del personaje
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '404':
+          description: No encontrado
+    patch:
+      summary: Actualizar parcialmente un person
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Campos parciales para actualizar
+              additionalProperties: true
+      responses:
+        '200':
+          description: Person actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '404':
+          description: No encontrado
+  /films:
+    get:
+      summary: Listar películas
+      responses:
+        '200':
+          description: Lista de películas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Film'
+    post:
+      summary: Crear nuevo film
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Film'
+      responses:
+        '201':
+          description: Film creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Film'
+  /films/{id}:
+    get:
+      summary: Obtener película por ID
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Detalle de película
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Film'
+        '404':
+          description: No encontrado
+    patch:
+      summary: Actualizar parcialmente un film
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Campos parciales para actualizar
+              additionalProperties: true
+      responses:
+        '200':
+          description: Film actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Film'
+        '404':
+          description: No encontrado
+  /planets:
+    get:
+      summary: Listar planetas
+      responses:
+        '200':
+          description: Lista de planetas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Planet'
+    post:
+      summary: Crear nuevo planet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Planet'
+      responses:
+        '201':
+          description: Planet creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Planet'
+  /planets/{id}:
+    get:
+      summary: Obtener planeta por ID
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Detalle del planeta
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Planet'
+        '404':
+          description: No encontrado
+    patch:
+      summary: Actualizar parcialmente un planet
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Campos parciales para actualizar
+              additionalProperties: true
+      responses:
+        '200':
+          description: Planet actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Planet'
+        '404':
+          description: No encontrado
+  /starships:
+    get:
+      summary: Listar naves espaciales
+      responses:
+        '200':
+          description: Lista de naves
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Starship'
+    post:
+      summary: Crear nuevo starship
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Starship'
+      responses:
+        '201':
+          description: Starship creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Starship'
+  /starships/{id}:
+    get:
+      summary: Obtener nave por ID
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Detalle de la nave
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Starship'
+        '404':
+          description: No encontrado
+    patch:
+      summary: Actualizar parcialmente un starship
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Campos parciales para actualizar
+              additionalProperties: true
+      responses:
+        '200':
+          description: Starship actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Starship'
+        '404':
+          description: No encontrado
+components:
+  schemas:
+    Person:
+      type: object
+      properties:
+        name:
+          type: string
+        height:
+          type: string
+        mass:
+          type: string
+        hair_color:
+          type: string
+        skin_color:
+          type: string
+        eye_color:
+          type: string
+        birth_year:
+          type: string
+        gender:
+          type: string
+        homeworld:
+          type: string
+        films:
+          type: array
+          items:
+            type: string
+      example:
+        name: Luke Skywalker
+        height: '172'
+        mass: '77'
+        hair_color: blond
+        skin_color: fair
+        eye_color: blue
+        birth_year: 19BBY
+        gender: male
+        homeworld: https://swapi.info/api/planets/1
+        films:
+        - https://swapi.info/api/films/1
+        - https://swapi.info/api/films/2
+        - https://swapi.info/api/films/3
+        - https://swapi.info/api/films/6
+        species: []
+        vehicles:
+        - https://swapi.info/api/vehicles/14
+        - https://swapi.info/api/vehicles/30
+        starships:
+        - https://swapi.info/api/starships/12
+        - https://swapi.info/api/starships/22
+        created: 2014-12-09 13:50:51.644000+00:00
+        edited: 2014-12-20 21:17:56.891000+00:00
+        url: https://swapi.info/api/people/1
+    Film:
+      type: object
+      properties:
+        title:
+          type: string
+        episode_id:
+          type: integer
+        opening_crawl:
+          type: string
+        director:
+          type: string
+        producer:
+          type: string
+        release_date:
+          type: string
+          format: date
+        characters:
+          type: array
+          items:
+            type: string
+        planets:
+          type: array
+          items:
+            type: string
+    Planet:
+      type: object
+      properties:
+        name:
+          type: string
+        rotation_period:
+          type: string
+        orbital_period:
+          type: string
+        diameter:
+          type: string
+        climate:
+          type: string
+        gravity:
+          type: string
+        terrain:
+          type: string
+        surface_water:
+          type: string
+        population:
+          type: string
+    Starship:
+      type: object
+      properties:
+        name:
+          type: string
+        model:
+          type: string
+        manufacturer:
+          type: string
+        cost_in_credits:
+          type: string
+        length:
+          type: string
+        max_atmosphering_speed:
+          type: string
+        crew:
+          type: string
+        passengers:
+          type: string
+        cargo_capacity:
+          type: string
+        starship_class:
+          type: string

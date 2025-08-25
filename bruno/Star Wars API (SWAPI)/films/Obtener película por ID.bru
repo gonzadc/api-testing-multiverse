@@ -1,0 +1,20 @@
+meta {
+  name: Obtener película por ID
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/films/:id
+  body: none
+  auth: none
+}
+
+params:path {
+  id: 1
+}
+
+assert {
+  res.status: eq 200
+  res.body.title: eq "A New Hope"
+}

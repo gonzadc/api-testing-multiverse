@@ -1,0 +1,16 @@
+# Ejemplo test smoke para la API de Star Wars
+
+version: "1.1"
+name: "smoke absolute url"
+tests:
+  swapi-people-absolute:
+    steps:
+      - http:
+          method: GET
+          url: "https://swapi.info/api/people"
+          check:
+            status: 200
+            schema:
+              type: array
+              items:
+                type: object

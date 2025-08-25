@@ -1,0 +1,101 @@
+
+version: '3.8'
+services:
+
+  prism:
+    image: stoplight/prism:4
+    command: mock -h 0.0.0.0 /openapi/swapi.yaml
+    volumes:
+      - ./openapi:/openapi
+    ports:
+      - "4010:4010"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4010/people" ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [swapi_net]
+
+  prism-proxy:
+    image: stoplight/prism:4
+    command: proxy -h 0.0.0.0 /openapi/swapi.yaml https://swapi.info/api
+    volumes:
+      - ./openapi:/openapi
+    ports:
+      - "4011:4010"
+    networks:
+      - swapi_net
+
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    container_name: swagger-ui
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./openapi:/openapi
+    environment:
+      SWAGGER_JSON: /openapi/swapi.yaml
+    networks:
+      - swapi_net
+    depends_on:
+      - prism
+
+  karate-job:
+    image: ghcr.io/karatelabs/karate:latest
+    profiles: ["tests-karate"]           # solo corre cuando activás el profile
+    environment:
+      BASE_URL: http://prism:4010
+    working_dir: /karate
+    volumes:
+      - ./karate:/karate
+    command: karate auto.feature
+    networks:
+      - swapi_net
+
+  stepci-job:
+    image: ghcr.io/stepci/stepci:latest
+    profiles: ["tests-stepci"]           # solo corre cuando activás el profile
+    volumes:
+      - ./stepci:/stepci
+      - ./openapi:/openapi
+    environment:
+      STEPCI_DISABLE_ANALYTICS: "1"
+    networks: [swapi_net]
+    healthcheck:
+      disable: true
+    command: ["/stepci/workflow.yml"]
+
+  k6:
+    image: grafana/k6:latest
+    profiles: ["tests-k6"]            # solo corre cuando activás el profile
+    environment:
+      BASE_URL: "http://prism:4010/"  # o "https://swapi.info/api/"
+    volumes:
+      - ./k6:/k6
+    command: ["run", "--summary-export=/k6/results/summary.json", "/k6/starwars.js"]
+    networks: [swapi_net]
+
+  zap-api:
+    image: ghcr.io/zaproxy/zaproxy:weekly
+    profiles: ["security"]
+    volumes:
+      - ./openapi/swapi.yaml:/zap/wrk/openapi.yaml:ro
+      - ./zap:/zap/wrk
+    command:
+      [
+        "zap-api-scan.py",
+        "-t","/zap/wrk/openapi.yaml",
+        "-f","openapi",
+        "-r","/zap/wrk/zap-api-report.html",
+        "-J","/zap/wrk/zap-api-report.json",
+        "-d","-I","-S",
+        "-z","-config api.disablekey=true"
+      ]
+    networks: [swapi_net]
+
+networks:
+  swapi_net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.110.0/24

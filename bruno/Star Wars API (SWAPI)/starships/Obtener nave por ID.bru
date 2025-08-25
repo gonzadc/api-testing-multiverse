@@ -1,0 +1,15 @@
+meta {
+  name: Obtener nave por ID
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/starships/:id
+  body: none
+  auth: none
+}
+
+params:path {
+  id: 
+}

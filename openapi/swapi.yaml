@@ -1,0 +1,553 @@
+openapi: 3.0.3
+info:
+  title: Star Wars API (SWAPI)
+  description: API pública para acceder a datos del universo de Star Wars.
+  version: 1.0.0
+servers:
+  - url: https://swapi.info/api
+  - url: http://localhost:4010
+  - url: http://localhost:4011
+  - url: http://prism:4010  # Mock server
+
+tags:
+  - name: people
+    description: "Characters in the Star Wars Universe"
+  - name: films
+    description: "Films in the Star Wars Universe"
+  - name: planets
+    description: "Planets in the Star Wars Universe"
+  - name: starships
+    description: "Starships in the Star Wars Universe"
+  - name: species
+    description: "Species in the Star Wars Universe"
+  - name: vehicles
+    description: "Vehicles in the Star Wars Universe"
+
+paths:
+  /people:
+    get:
+      tags: [people]
+      summary: Listar personajes
+      operationId: listPeople
+      responses:
+        '200':
+          description: Lista de personajes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Person'
+
+  /people/{id}:
+    get:
+      tags: [people]
+      summary: Obtener personaje por ID
+      operationId: getPersonById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Detalle del personaje
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+              example:
+                name: "Luke Skywalker"
+                height: "172"
+                mass: "77"
+                hair_color: "blond"
+                skin_color: "fair"
+                eye_color: "blue"
+                birth_year: "19BBY"
+                gender: "male"
+                homeworld: "https://swapi.info/api/planets/1"
+                films:
+                  - "https://swapi.info/api/films/1"
+                  - "https://swapi.info/api/films/2"
+                  - "https://swapi.info/api/films/3"
+                  - "https://swapi.info/api/films/6"
+                species: []
+                vehicles:
+                  - "https://swapi.info/api/vehicles/14"
+                  - "https://swapi.info/api/vehicles/30"
+                starships:
+                  - "https://swapi.info/api/starships/12"
+                  - "https://swapi.info/api/starships/22"
+                created: "2014-12-09T13:50:51.644000+00:00"
+                edited: "2014-12-20T21:17:56.891000+00:00"
+                url: "https://swapi.info/api/people/1"
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /films:
+    get:
+      tags: [films]
+      summary: Listar películas
+      operationId: listFilms
+      responses:
+        '200':
+          description: Lista de películas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Film'
+              example:
+                results:
+                  - &FilmExample
+                    title: "The Empire Strikes Back"
+                    episode_id: 5
+                    opening_crawl: "It is a dark time for the\r\nRebellion. Although the Death\r\nStar has been destroyed,\r\nImperial troops have driven the\r\nRebel forces from their hidden\r\nbase and pursued them across\r\nthe galaxy.\r\n\r\nEvading the dreaded Imperial\r\nStarfleet, a group of freedom\r\nfighters led by Luke Skywalker\r\nhas established a new secret\r\nbase on the remote ice world\r\nof Hoth.\r\n\r\nThe evil lord Darth Vader,\r\nobsessed with finding young\r\nSkywalker, has dispatched\r\nthousands of remote probes into\r\nthe far reaches of space...."
+                    director: "Irvin Kershner"
+                    producer: "Gary Kurtz, Rick McCallum"
+                    release_date: "1980-05-17"
+                    characters:
+                      - "https://swapi.info/api/people/1"
+                      - "https://swapi.info/api/people/2"
+                      - "https://swapi.info/api/people/3"
+                      - "https://swapi.info/api/people/4"
+                      - "https://swapi.info/api/people/5"
+                      - "https://swapi.info/api/people/10"
+                      - "https://swapi.info/api/people/13"
+                      - "https://swapi.info/api/people/14"
+                      - "https://swapi.info/api/people/18"
+                      - "https://swapi.info/api/people/20"
+                      - "https://swapi.info/api/people/21"
+                      - "https://swapi.info/api/people/22"
+                      - "https://swapi.info/api/people/23"
+                      - "https://swapi.info/api/people/24"
+                      - "https://swapi.info/api/people/25"
+                      - "https://swapi.info/api/people/26"
+                    planets:
+                      - "https://swapi.info/api/planets/4"
+                      - "https://swapi.info/api/planets/5"
+                      - "https://swapi.info/api/planets/6"
+                      - "https://swapi.info/api/planets/27"
+                    starships:
+                      - "https://swapi.info/api/starships/3"
+                      - "https://swapi.info/api/starships/10"
+                      - "https://swapi.info/api/starships/11"
+                      - "https://swapi.info/api/starships/12"
+                      - "https://swapi.info/api/starships/15"
+                      - "https://swapi.info/api/starships/17"
+                      - "https://swapi.info/api/starships/21"
+                      - "https://swapi.info/api/starships/22"
+                      - "https://swapi.info/api/starships/23"
+                    vehicles:
+                      - "https://swapi.info/api/vehicles/8"
+                      - "https://swapi.info/api/vehicles/14"
+                      - "https://swapi.info/api/vehicles/16"
+                      - "https://swapi.info/api/vehicles/18"
+                      - "https://swapi.info/api/vehicles/19"
+                      - "https://swapi.info/api/vehicles/20"
+                    species:
+                      - "https://swapi.info/api/species/1"
+                      - "https://swapi.info/api/species/2"
+                      - "https://swapi.info/api/species/3"
+                      - "https://swapi.info/api/species/6"
+                      - "https://swapi.info/api/species/7"
+                    created: "2014-12-12T11:26:24.656000Z"
+                    edited: "2014-12-15T13:07:53.386000Z"
+                    url: "https://swapi.info/api/films/2"
+
+  /films/{id}:
+    get:
+      tags: [films]
+      summary: Obtener película por ID
+      operationId: getFilmById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Detalle de película
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Film' }
+              example: *FilmExample
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /planets:
+    get:
+      tags: [planets]
+      summary: Listar planetas
+      operationId: listPlanets
+      responses:
+        '200':
+          description: Lista de planetas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Planet'
+
+  /planets/{id}:
+    get:
+      tags: [planets]
+      summary: Obtener planeta por ID
+      operationId: getPlanetById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Detalle del planeta
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Planet' }
+              example:
+                name: "Tatooine"
+                rotation_period: "23"
+                orbital_period: "304"
+                diameter: "10465"
+                climate: "arid"
+                gravity: "1 standard"
+                terrain: "desert"
+                surface_water: "1"
+                population: "200000"
+                residents:
+                  - "https://swapi.info/api/people/1"
+                  - "https://swapi.info/api/people/2"
+                films:
+                  - "https://swapi.info/api/films/1"
+                  - "https://swapi.info/api/films/3"
+                created: "2014-12-09T13:50:49.641000Z"
+                edited: "2014-12-20T20:58:18.411000Z"
+                url: "https://swapi.info/api/planets/1"
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /starships:
+    get:
+      tags: [starships]
+      summary: Listar naves espaciales
+      operationId: listStarships
+      responses:
+        '200':
+          description: Lista de naves
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Starship'
+
+  /starships/{id}:
+    get:
+      tags: [starships]
+      summary: Obtener nave por ID
+      operationId: getStarshipById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Detalle de la nave
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Starship' }
+              example:
+                name: "CR90 corvette"
+                model: "CR90 corvette"
+                manufacturer: "Corellian Engineering Corporation"
+                cost_in_credits: "3500000"
+                length: "150"
+                max_atmosphering_speed: "950"
+                crew: "30-165"
+                passengers: "600"
+                cargo_capacity: "3000000"
+                consumables: "1 year"
+                hyperdrive_rating: "2.0"
+                MGLT: "60"
+                starship_class: "corvette"
+                pilots: []
+                films:
+                  - "https://swapi.info/api/films/1"
+                  - "https://swapi.info/api/films/3"
+                created: "2014-12-10T14:20:33.369000Z"
+                edited: "2014-12-20T21:23:49.867000Z"
+                url: "https://swapi.info/api/starships/2"
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /species:
+    get:
+      tags: [species]
+      summary: Listar especies
+      operationId: listSpecies
+      responses:
+        '200':
+          description: Lista de especies
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Species' }
+
+  /species/{id}:
+    get:
+      tags: [species]
+      summary: Obtener species por ID
+      operationId: getSpeciesById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Detalle species
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Species' }
+              example:
+                name: "Human"
+                classification: "mammal"
+                designation: "sentient"
+                average_height: "180"
+                skin_colors: "caucasian, black, asian, hispanic"
+                hair_colors: "blonde, brown, black, red"
+                eye_colors: "brown, blue, green, hazel, grey, amber"
+                average_lifespan: "120"
+                homeworld: "https://swapi.info/api/planets/9"
+                language: "Galactic Basic"
+                people:
+                  - "https://swapi.info/api/people/66"
+                  - "https://swapi.info/api/people/67"
+                films:
+                  - "https://swapi.info/api/films/1"
+                  - "https://swapi.info/api/films/2"
+                created: "2014-12-10T13:52:11.567000Z"
+                edited: "2014-12-20T21:36:42.136000Z"
+                url: "https://swapi.info/api/species/1"
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /vehicles:
+    get:
+      tags: [vehicles]
+      summary: Listar vehículos
+      operationId: listVehicles
+      responses:
+        '200':
+          description: Lista de vehículos
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Vehicle' }
+
+  /vehicles/{id}:
+    get:
+      tags: [vehicles]
+      summary: Obtener vehicle por ID
+      operationId: getVehicleById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Detalle vehicle
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Vehicle' }
+              example:
+                name: "Sand Crawler"
+                model: "Digger Crawler"
+                manufacturer: "Corellia Mining Corporation"
+                cost_in_credits: "150000"
+                length: "36.8 "
+                max_atmosphering_speed: "30"
+                crew: "46"
+                passengers: "30"
+                cargo_capacity: "50000"
+                consumables: "2 months"
+                vehicle_class: "wheeled"
+                pilots: []
+                films:
+                  - "https://swapi.info/api/films/1"
+                  - "https://swapi.info/api/films/5"
+                created: "2014-12-10T15:36:25.724000Z"
+                edited: "2014-12-20T21:30:21.661000Z"
+                url: "https://swapi.info/api/vehicles/4"
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  responses:
+    NotFound:
+      description: No encontrado
+
+  schemas:
+    Person:
+      type: object
+      properties:
+        name: { type: string }
+        height: { type: string }
+        mass: { type: string }
+        hair_color: { type: string }
+        skin_color: { type: string }
+        eye_color: { type: string }
+        birth_year: { type: string }
+        gender: { type: string }
+        homeworld: { type: string, format: uri }
+        films:
+          type: array
+          items: { type: string, format: uri }
+        species:
+          type: array
+          items: { type: string, format: uri }
+        vehicles:
+          type: array
+          items: { type: string, format: uri }
+        starships:
+          type: array
+          items: { type: string, format: uri }
+        created: { type: string, format: date-time }
+        edited:  { type: string, format: date-time }
+        url:     { type: string, format: uri }
+      required: [name, url]
+
+    Planet:
+      type: object
+      properties:
+        name: { type: string }
+        rotation_period: { type: string }
+        orbital_period: { type: string }
+        diameter: { type: string }
+        climate: { type: string }
+        gravity: { type: string }
+        terrain: { type: string }
+        surface_water: { type: string }
+        population: { type: string }
+        residents:
+          type: array
+          items: { type: string, format: uri }
+        films:
+          type: array
+          items: { type: string, format: uri }
+        created: { type: string, format: date-time }
+        edited:  { type: string, format: date-time }
+        url:     { type: string, format: uri }
+      required: [name, url]
+
+    Species:
+      type: object
+      properties:
+        name: { type: string }
+        classification: { type: string }
+        designation: { type: string }
+        average_height: { type: string }
+        skin_colors: { type: string }
+        hair_colors: { type: string }
+        eye_colors: { type: string }
+        average_lifespan: { type: string }
+        homeworld: { type: string, format: uri }
+        language: { type: string }
+        people:
+          type: array
+          items: { type: string, format: uri }
+        films:
+          type: array
+          items: { type: string, format: uri }
+        created: { type: string, format: date-time }
+        edited:  { type: string, format: date-time }
+        url:     { type: string, format: uri }
+      required: [name, url]
+
+    Starship:
+      type: object
+      properties:
+        name: { type: string }
+        model: { type: string }
+        manufacturer: { type: string }
+        cost_in_credits: { type: string }
+        length: { type: string }
+        max_atmosphering_speed: { type: string }
+        crew: { type: string }
+        passengers: { type: string }
+        cargo_capacity: { type: string }
+        consumables: { type: string }
+        hyperdrive_rating: { type: string }
+        MGLT: { type: string }
+        starship_class: { type: string }
+        pilots:
+          type: array
+          items: { type: string, format: uri }
+        films:
+          type: array
+          items: { type: string, format: uri }
+        created: { type: string, format: date-time }
+        edited:  { type: string, format: date-time }
+        url:     { type: string, format: uri }
+      required: [name, url]
+
+    Vehicle:
+      type: object
+      properties:
+        name: { type: string }
+        model: { type: string }
+        manufacturer: { type: string }
+        cost_in_credits: { type: string }
+        length: { type: string }
+        max_atmosphering_speed: { type: string }
+        crew: { type: string }
+        passengers: { type: string }
+        cargo_capacity: { type: string }
+        consumables: { type: string }
+        vehicle_class: { type: string }
+        pilots:
+          type: array
+          items: { type: string, format: uri }
+        films:
+          type: array
+          items: { type: string, format: uri }
+        created: { type: string, format: date-time }
+        edited:  { type: string, format: date-time }
+        url:     { type: string, format: uri }
+      required: [name, url]
+
+    Film:
+      type: object
+      properties:
+        title: { type: string }
+        episode_id: { type: integer }
+        opening_crawl: { type: string }
+        director: { type: string }
+        producer: { type: string }
+        release_date: { type: string, format: date }
+        characters:
+          type: array
+          items: { type: string, format: uri }
+        planets:
+          type: array
+          items: { type: string, format: uri }
+        starships:
+          type: array
+          items: { type: string, format: uri }
+        vehicles:
+          type: array
+          items: { type: string, format: uri }
+        species:
+          type: array
+          items: { type: string, format: uri }
+        created: { type: string, format: date-time }
+        edited:  { type: string, format: date-time }
+        url:     { type: string, format: uri }
+      required: [title, episode_id, url]

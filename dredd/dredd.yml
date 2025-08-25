@@ -1,0 +1,8 @@
+color: true
+dry-run: false
+inline-errors: true
+details: true
+names: true
+only: []
+hookfiles: []
+language: nodejs
