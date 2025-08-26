@@ -41,14 +41,14 @@ services:
       - prism
 
   karate-job:
-    image: ghcr.io/karatelabs/karate:latest
+    image: karate-jre:latest
     profiles: ["tests-karate"]           # solo corre cuando activás el profile
     environment:
       BASE_URL: http://prism:4010
-    working_dir: /karate
+    working_dir: /src
     volumes:
-      - ./karate:/karate
-    command: karate auto.feature
+      - ./karate:/src
+    command: java -jar /karate.jar .
     networks:
       - swapi_net
 
