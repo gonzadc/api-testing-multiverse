@@ -1,6 +1,6 @@
 # API Testing Multiverse — SWAPI (Star Wars)
 
-Repositorio para experimentar un **multiverso de testing de APIs** alrededor de una especificación **OpenAPI de Star Wars (SWAPI)**. Incluye mock/proxy con Prism, documentación con Swagger UI y perfiles para ejecutar distintas herramientas de testing: **StepCI**, **Dredd**, **k6** y **OWASP ZAP** (además de un job opcional de **Karate**).
+Repositorio para experimentar un **multiverso de testing de APIs** alrededor de una especificación **OpenAPI de Star Wars (SWAPI)**. Incluye mock/proxy con Prism, documentación con Swagger UI y herramientas de testing: **StepCI**, **Dredd**, **k6**, **OWASP ZAP** y **Karate**.
 
 > **Objetivo**: levantar rápidamente un entorno reproducible con Docker/Compose y correr pruebas de contrato, flujos, performance y seguridad contra la misma OAS.
 
@@ -11,7 +11,7 @@ Repositorio para experimentar un **multiverso de testing de APIs** alrededor de 
 - [Requisitos](#requisitos)
 - [Arranque rápido](#arranque-rápido)
 - [Servicios base: Prism, Prism Proxy & Swagger UI](#servicios-base-prism-prism-proxy--swagger-ui)
-- [Perfiles y ejecución de herramientas](#perfiles-y-ejecución-de-herramientas)
+- [Cómo ejecutar las pruebas (scripts `run-*`)](#cómo-ejecutar-las-pruebas-scripts-run-)
   - [StepCI (flujos end-to-end declarativos)](#stepci-flujos-end-to-end-declarativos)
   - [Dredd (contrato OpenAPI)](#dredd-contrato-openapi)
   - [k6 (performance)](#k6-performance)
@@ -29,33 +29,43 @@ Repositorio para experimentar un **multiverso de testing de APIs** alrededor de 
 
 ```
 /api-testing-multiverse
-├── bruno/
+├── bruno/                      # Files de Bruno, generados al importar el openapi
 ├── dredd/
 │   └── dredd.yml
-├── extra/
+├── extra/                      # Material extra
 ├── k6/
 │   ├── results/
 │   │   └── summary.json
 │   └── starwars.js
 ├── karate/
+│   ├── target/                 # salida de build/runner
+│   ├── auto.feature            # ejemplo de feature
+│   ├── build-karate.sh         # helper para construir imagen
+│   ├── Dockerfile              # imagen para ejecutar tests
+│   └── karate-config.js        # configuración de Karate
 ├── openapi/
-│   ├── swapi.yaml
-│   └── swapi_extended.yaml
+│   ├── swapi.yaml              # openapi estandar 
+│   └── swapi_extended.yaml     # openapi extendida, para una implementacion con metodos POST / PATCH
 ├── prism/
 │   └── prism.yml
 ├── stepci/
 │   ├── smoke.yml
 │   └── workflow.yml
 ├── zap/
-│   ├── openapi.yaml
-│   ├── zap-api-report.html
-│   ├── zap-api-report.json
-│   └── zap.yaml
+│   ├── automation.yaml         # plan de automatización de ZAP
+│   ├── openapi.yaml            # OAS para ZAP (si aplica, se genera al correr la imagen Docker)
+│   ├── zap-automation.html     # reporte HTML
+│   └── zap.yaml                # config adicional
 ├── docker-compose.yml
-└── README.md
+├── README.md
+├── run-dredd-tests.sh
+├── run-k6-tests.sh
+├── run-karate-tests.sh
+├── run-stepci-tests.sh
+└── run-zap-tests.sh
 ```
 
-> Ajusta descripciones si cambian nombres o rutas.
+> Las rutas pueden evolucionar; en cada sección se indica dónde ajustar variables si cambian.
 
 ---
 
@@ -76,20 +86,21 @@ Repositorio para experimentar un **multiverso de testing de APIs** alrededor de 
 cd api-testing-multiverse
 ```
 
-2) Levanta los **servicios base** (Prism, Prism Proxy y Swagger UI):
+2) **Levantá los servicios base** (Prism, Prism Proxy y Swagger UI):
 ```bash
 # logs en foreground
 docker compose up
 # o en segundo plano
 # docker compose up -d
 ```
+> **¿Es necesario levantar el entorno antes de correr los tests?** Sí. Los scripts `run-*` asumen que Prism/Swagger ya están arriba para poder alcanzar `http://prism:4010` (o `http://localhost:4010`).
 
-3) Verifica:
-- **Prism** (mock): `http://localhost:4010`
-- **Prism Proxy** (proxy → `https://swapi.info/api`): `http://localhost:4011`
+3) Verifica desde host:
+- **Prism (mock)**: `http://localhost:4010`
+- **Prism Proxy**: `http://localhost:4011`
 - **Swagger UI**: `http://localhost:8080`
 
-4) Ejecuta herramientas por **perfil** (ver sección siguiente). Para bajar todo:
+Para bajar todo:
 ```bash
 docker compose down
 ```
@@ -98,103 +109,69 @@ docker compose down
 
 ## Servicios base: Prism, Prism Proxy & Swagger UI
 - **Prism (mock)** lee `openapi/swapi.yaml` y responde conforme a esquemas/ejemplos. Tiene *healthcheck* a `/people`.
-- **Prism Proxy** reenvía el tráfico a `https://swapi.info/api` respetando el contrato (útil para comparar mock vs real).
+- **Prism Proxy** reenvía tráfico a `https://swapi.info/api` respetando el contrato (útil para comparar mock vs real).
 - **Swagger UI** sirve la documentación interactiva contra la misma OAS.
 
 ---
 
-## Perfiles y ejecución de herramientas
-> Levantá Prism/Swagger primero y luego corré cada herramienta **a demanda**.
+## Cómo ejecutar las pruebas (scripts `run-*`)
+> Desde la raíz del repo, con el entorno base ya levantado. Si fuera necesario, marcá los scripts como ejecutables: `chmod +x run-*.sh`
 
 ### StepCI (flujos end-to-end declarativos)
-Perfil: **`tests-stepci`**. Ejecuta el workflow en `stepci/workflow.yml` (y/o `smoke.yml`).
-
+Ejecuta los escenarios definidos en `stepci/workflow.yml` (y/o `smoke.yml`).
 ```bash
-# Devuelve el exit code del contenedor de StepCI
-docker compose --profile tests-stepci up \
-  --abort-on-container-exit \
-  --exit-code-from stepci-job \
-  stepci-job
+./run-stepci-tests.sh
 ```
-
-- Ajustá variables/inputs en `stepci/*.yml`.
+> Ajustá variables/inputs en `stepci/*.yml`.
 
 ### Dredd (contrato OpenAPI)
-No está como servicio en Compose (se usa `docker run`). Dos opciones:
-
-**A) Usando el puerto publicado (más simple):**
+Valida que las respuestas cumplen el contrato en `openapi/swapi.yaml`.
 ```bash
-docker run --rm \
-  -v "$PWD/openapi:/openapi:ro" \
-  apiaryio/dredd:latest \
-  dredd /openapi/swapi.yaml http://localhost:4010 --color
+./run-dredd-tests.sh
 ```
-
-**B) Usando la red de Compose (para apuntar a `http://prism:4010`):**
-```bash
-# reemplazá <NOMBRE_RED> por el nombre real, por ejemplo: api-testing-multiverse_swapi_net
-docker run --rm \
-  --network <NOMBRE_RED> \
-  -v "$PWD/openapi:/openapi:ro" \
-  apiaryio/dredd:latest \
-  dredd /openapi/swapi.yaml http://prism:4010 --color
-```
-
-> Agregá `--dry-run` si querés solo validar sin ejecutar requests.
+> Si querés sólo simular, agregá `--dry-run` dentro del script.
 
 ### k6 (performance)
-Perfil: **`tests-k6`**. Exporta el resumen a `k6/results/summary.json` y ejecuta `k6/starwars.js`.
-
+Ejecuta `k6/starwars.js` y guarda el resumen en `k6/results/summary.json`.
 ```bash
-docker compose --profile tests-k6 up \
-  --abort-on-container-exit \
-  --exit-code-from k6 \
-  k6
+./run-k6-tests.sh
 ```
-
-- Configurá `BASE_URL` en el compose (por defecto `http://prism:4010/`).
 
 ### OWASP ZAP (seguridad)
-Perfil: **`security`**. Corre **API Scan** con la OAS y deja reportes en `zap/`.
-
+Lanza el escaneo automático con configuración de `zap/automation.yaml`. Genera reporte HTML.
 ```bash
-docker compose --profile security up \
-  --abort-on-container-exit \
-  --exit-code-from zap-api \
-  zap-api
+./run-zap-tests.sh
 ```
+> Los reportes quedan en `zap/zap-automation.html` (y/o JSON si está configurado).
 
-- Reportes: `zap/zap-api-report.html` y `zap/zap-api-report.json`.
+### Karate 
+1. Usá `karate/build-karate.sh` para construir/actualizar la imagen Docker.
 
-### Karate (opcional)
-Perfil: **`tests-karate`**. Si tenés features en `karate/`, podés ejecutarlas:
+2. Ejecuta las *features* de `karate/` usando la imagen definida en `karate/Dockerfile`.
 ```bash
-docker compose --profile tests-karate up \
-  --abort-on-container-exit \
-  --exit-code-from karate-job \
-  karate-job
+./run-karate-tests.sh
 ```
 
 ---
 
 ## Notas de red y puertos
-- Dentro de la **red de Compose** podés usar el nombre del servicio (p.ej., `http://prism:4010`).
+- Dentro de la **red de Compose** usá el nombre del servicio (p.ej., `http://prism:4010`).
 - Desde **host** usá `http://localhost:4010` (o `4011` para el proxy).
-- Para contenedores externos (`docker run`), unilos a la red de Compose **o** apuntá a los puertos publicados en `localhost`.
+- Si ejecutás contenedores externos, unilos a la red de Compose **o** apuntá a los puertos publicados en `localhost`.
 
 ---
 
 ## Solución de problemas
-- **Dredd: "Must specify path to API description"** → Pasá ambos: ruta a OAS y URL del server de pruebas.
-- **`Permission denied` al montar OAS** → Revisa permisos del archivo (`chmod 644 openapi/swapi.yaml`) y el volumen `:ro`.
+- **Dredd: "Must specify path to API description"** → El runner debe pasar la ruta a la OAS **y** la URL del server de pruebas.
+- **`Permission denied` al montar OAS** → Verificá permisos del archivo (`chmod 644 openapi/swapi.yaml`) y el volumen `:ro`.
 - **`Invalid URL`/`Connection refused`** → Asegurate de que Prism esté *up* (`docker compose ps`, `curl http://localhost:4010`).
-- **No resuelve `prism` desde `docker run`** → Usá `--network <red>` o `http://localhost:4010`.
+- **No resuelve `prism` desde un contenedor** → Usá `--network <red>` o `http://localhost:4010`.
 - **Puertos ocupados** → Cambiá los puertos publicados en el compose.
 
 ---
 
 ## CI/CD en GitHub Actions
-Ejemplo de pipeline que levanta los servicios base y ejecuta **StepCI**, **Dredd**, **k6** y **ZAP**, publicando artefactos clave.
+Ejemplo de pipeline que **levanta los servicios base** y ejecuta **los scripts `run-*`**, publicando artefactos.
 
 Guarda como `.github/workflows/api-testing.yml`:
 
@@ -215,36 +192,30 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Docker Compose version
-        run: docker compose version
-
       - name: Start base services (Prism, Proxy, Swagger)
         run: |
           docker compose up -d prism prism-proxy swagger-ui
-          # Espera a que Prism esté listo (healthcheck)
+          # Espera a que Prism esté listo
           for i in {1..40}; do
             curl -fsS http://localhost:4010/people && break
             sleep 3
           done
 
       - name: StepCI
-        run: |
-          docker compose --profile tests-stepci up --abort-on-container-exit --exit-code-from stepci-job stepci-job
+        run: ./run-stepci-tests.sh
 
       - name: Dredd (contract)
-        run: |
-          docker run --rm \
-            -v "$PWD/openapi:/openapi:ro" \
-            apiaryio/dredd:latest \
-            dredd /openapi/swapi.yaml http://localhost:4010 --color
+        run: ./run-dredd-tests.sh
 
       - name: k6 (performance)
-        run: |
-          docker compose --profile tests-k6 up --abort-on-container-exit --exit-code-from k6 k6
+        run: ./run-k6-tests.sh
 
       - name: ZAP (security)
-        run: |
-          docker compose --profile security up --abort-on-container-exit --exit-code-from zap-api zap-api
+        run: ./run-zap-tests.sh
+
+      - name: Karate (optional)
+        if: ${{ false }} # Cambia a true si querés incluir Karate en el pipeline
+        run: ./run-karate-tests.sh
 
       - name: Upload k6 summary
         if: always()
@@ -260,6 +231,7 @@ jobs:
         with:
           name: zap-reports
           path: |
+            zap/zap-automation.html
             zap/zap-api-report.html
             zap/zap-api-report.json
           if-no-files-found: warn
@@ -275,11 +247,14 @@ jobs:
 
 ## Archivos clave
 - **`openapi/swapi.yaml`** — OAS principal
+- **`openapi/swapi_extended.yaml`** — variantes/recursos extendidos
 - **`k6/starwars.js`** — script de carga (exporta resumen a `k6/results/summary.json`)
 - **`stepci/workflow.yml`** — workflow de StepCI (y `smoke.yml` para smoke tests)
-- **`zap/zap.yaml`** — config adicional de ZAP (si aplica)
-- **`dredd/dredd.yml`** — configuración/hooks de Dredd (si aplica)
-- **`prism/prism.yml`** — reglas de Prism (si aplica)
+- **`zap/automation.yaml`**, **`zap/zap.yaml`** — configuración ZAP; reportes en `zap/zap-automation.html`
+- **`dredd/dredd.yml`** — configuración/hooks de Dredd
+- **`prism/prism.yml`** — reglas de Prism
+- **`karate/*.feature`, `karate-config.js`, `karate/Dockerfile`** — tests de Karate
+- **Scripts `run-*`** — runners de cada herramienta
 - **`docker-compose.yml`** — servicios, perfiles y red
 
 ---
